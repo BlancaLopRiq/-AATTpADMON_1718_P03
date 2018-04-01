@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 import javax.smartcardio.*;
 
 /**
- * La clase ObtenerDatos implementa cuatro métodos públicos que permiten obtener
+ * La clase ObtenerDatos implementa cuatro mÃ©todos pÃºblicos que permiten obtener
  * determinados datos de los certificados de tarjetas DNIe, Izenpe y Ona.
  *
  * @author tbc
@@ -58,7 +58,7 @@ public class ObtenerDatos {
         int offset = 0;
         String completName = null;
 
-        //[1] PRÁCTICA 3. Punto 1.a
+        //[1] PRÃ�CTICA 3. Punto 1.a --> Selección directa del fichero dedicado(DF) por nombre 
         byte[] command = new byte[]{(byte) 0x00, (byte) 0xa4, (byte) 0x04, (byte) 0x00, (byte) 0x0b, (byte) 0x4D, (byte) 0x61, (byte) 0x73, (byte) 0x74, (byte) 0x65, (byte) 0x72, (byte) 0x2E, (byte) 0x46, (byte) 0x69, (byte) 0x6C, (byte) 0x65};
         ResponseAPDU r = ch.transmit(new CommandAPDU(command));
         if ((byte) r.getSW() != (byte) 0x9000) {
@@ -66,7 +66,7 @@ public class ObtenerDatos {
             return null;
         }
 
-        //[2] PRÁCTICA 3. Punto 1.a
+        //[2] PRÃ�CTICA 3. Punto 1.a --> Se selecciona fichero dedicado (DF) o fichero elemental(EF) por id: 5015
         command = new byte[]{(byte) 0x00, (byte) 0xA4, (byte) 0x00, (byte) 0x00, (byte) 0x02, (byte) 0x50, (byte) 0x15};
         r = ch.transmit(new CommandAPDU(command));
 
@@ -75,7 +75,7 @@ public class ObtenerDatos {
             return null;
         }
 
-        //[3] PRÁCTICA 3. Punto 1.a
+        //[3] PRÃ�CTICA 3. Punto 1.a --> Se selecciona fichero dedicado (DF) o fichero elemental(EF) por id: 6004
         command = new byte[]{(byte) 0x00, (byte) 0xA4, (byte) 0x00, (byte) 0x00, (byte) 0x02, (byte) 0x60, (byte) 0x04};
         r = ch.transmit(new CommandAPDU(command));
 
@@ -92,13 +92,13 @@ public class ObtenerDatos {
         int bloque = 0;
 
         do {
-             //[4] PRÁCTICA 3. Punto 1.b
-            final byte CLA = (byte) 0x00;//Buscar qué valor poner aquí (0xFF no es el correcto)
-            final byte INS = (byte) 0xB0;//Buscar qué valor poner aquí (0xFF no es el correcto)
-            final byte LE = (byte) 0xFF;// Identificar qué significa este valor
+             //[4] PRÃ�CTICA 3. Punto 1.b
+            final byte CLA = (byte) 0x00;//Buscar quÃ© valor poner aquÃ­ (0xFF no es el correcto)
+            final byte INS = (byte) 0xB0;//Buscar quÃ© valor poner aquÃ­ (0xFF no es el correcto)
+            final byte LE = (byte) 0xFF;// Identificar quÃ© significa este valor
 
-            //[4] PRÁCTICA 3. Punto 1.b
-            command = new byte[]{CLA, INS, (byte) bloque/*P1*/, (byte) 0x00/*P2*/, LE};//Identificar qué hacen P1 y P2
+            //[4] PRÃ�CTICA 3. Punto 1.b
+            command = new byte[]{CLA, INS, (byte) bloque/*P1*/, (byte) 0x00/*P2*/, LE};//Identificar quÃ© hacen P1 y P2
             r = ch.transmit(new CommandAPDU(command));
 
             //System.out.println("ACCESO DNIe: Response SW1=" + String.format("%X", r.getSW1()) + " SW2=" + String.format("%X", r.getSW2()));
@@ -133,11 +133,11 @@ public class ObtenerDatos {
     
     
     /**
-     * Este método establece la conexión con la tarjeta. La función busca el
+     * Este mÃ©todo establece la conexiÃ³n con la tarjeta. La funciÃ³n busca el
      * Terminal que contenga una tarjeta, independientemente del tipo de tarjeta
      * que sea.
      *
-     * @return objeto Card con conexión establecida
+     * @return objeto Card con conexiÃ³n establecida
      * @throws Exception
      */
     private Card ConexionTarjeta() throws Exception {
@@ -166,12 +166,12 @@ public class ObtenerDatos {
     }
 
     /**
-     * Este método nos permite saber el tipo de tarjeta que estamos leyendo del
-     * Terminal, a partir del ATR de ésta.
+     * Este mÃ©todo nos permite saber el tipo de tarjeta que estamos leyendo del
+     * Terminal, a partir del ATR de Ã©sta.
      *
      * @param atrCard ATR de la tarjeta que estamos leyendo
      * @return tipo de la tarjeta. 1 si es DNIe, 2 si es Starcos y 0 para los
-     * demás tipos
+     * demÃ¡s tipos
      */
     private boolean esDNIe(byte[] atrCard) {
         int j = 0;
@@ -197,7 +197,7 @@ public class ObtenerDatos {
     }
 
     /**
-     * Analizar los datos leídos del DNIe para obtener
+     * Analizar los datos leÃ­dos del DNIe para obtener
      *   - nombre
      *   - apellidos
      *   - NIF
