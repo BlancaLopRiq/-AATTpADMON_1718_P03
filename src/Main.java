@@ -1,10 +1,4 @@
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -12,10 +6,9 @@ import java.net.URLEncoder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 
 
 /**
