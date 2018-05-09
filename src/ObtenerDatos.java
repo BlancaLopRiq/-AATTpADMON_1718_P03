@@ -6,6 +6,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.smartcardio.*;
 
+//import org.apptelematicas.dni.Usuario;
+
 /**
  * La clase ObtenerDatos implementa cuatro mÃ©todos pÃºblicos que permiten obtener
  * determinados datos de los certificados de tarjetas DNIe, Izenpe y Ona.
@@ -93,13 +95,13 @@ public class ObtenerDatos {
 
         do {
              //[4] PRÃ�CTICA 3. Punto 1.b
-            final byte CLA = (byte) 0x00;//Buscar quÃ© valor poner aquÃ­ (0xFF no es el correcto)
-            final byte INS = (byte) 0xB0;//Buscar quÃ© valor poner aquÃ­ (0xFF no es el correcto)
-            final byte LE = (byte) 0xFF;// Identificar quÃ© significa este valor
+            final byte CLA = (byte) 0x00;//Buscar quÃ© valor poner aquÃ­ (0xFF no es el correcto)--> El valor de CLA es 0x00 (comando select)
+            final byte INS = (byte) 0xB0;//Buscar quÃ© valor poner aquÃ­ (0xFF no es el correcto)--> El valor de INS es 0xA4 (comando select)
+            final byte LE = (byte) 0xFF;// Identificar quÃ© significa este valor--> Este valor en el comando select está vacío.
 
-            //[4] PRÃ�CTICA 3. Punto 1.b
+            //[4] PRÃ�CTICA 3. Punto 1.b --> Se leen 0xFF bytes del fichero
             command = new byte[]{CLA, INS, (byte) bloque/*P1*/, (byte) 0x00/*P2*/, LE};//Identificar quÃ© hacen P1 y P2
-            r = ch.transmit(new CommandAPDU(command));
+            r = ch.transmit(new CommandAPDU(command)); //P1 indica cómo se selecciona el fichero(por id o por nombre); P2 no indica nada, su valor siempre es 0x00 en este caso.
 
             //System.out.println("ACCESO DNIe: Response SW1=" + String.format("%X", r.getSW1()) + " SW2=" + String.format("%X", r.getSW2()));
 
@@ -205,6 +207,99 @@ public class ObtenerDatos {
      * @return 
      */
     private Usuario leerDatosUsuario(byte[] datos) {
-       return null;
-    }
+    	 int offset=0;
+	        int posicion_dni0=0;
+	        int posicion_nombre0 = 0;
+	        int posicion_apellido0 = 0;
+	        String nif=null;
+	        String apellido1= null;
+	        String apellido2= null;
+	        String nombre = null;
+	        char PrimeraLetraNombre = 0;
+	        char PrimeraLetra2Apellido = 0;
+	        String nombreUsuario=null;
+	        
+	        
+	        //Buscamos el oid que hay justo antes de donde se muestra el nif en la hoja de excel.
+	        //Una vez encontrado este oid lo que hacemos es aplicarle un offset hasta llegar a
+	        //donde empieza el nif.
+
+	            if (datos[4] == 0x30) {
+	                offset = 4;
+	                offset += datos[offset + 1] + 2; //Obviamos la seccion del Label
+	            }
+
+	            if (datos[offset] == 0x30) {
+	                offset += datos[offset + 1] + 2; //Obviamos la seccion de la informacion sobre la fecha de expedición etc
+	            }
+
+	            if ((byte) datos[offset] == (byte) 0xA1) {
+	                //El certificado empieza aquí
+	                byte[] r3 = new byte[9];
+	                byte[] r4 = new byte[40];
+	                byte[] r2 = new byte[6];
+	              
+	                
+	                
+	                //primero sacamos el DNI
+	                for (int i=0;i<datos.length;i++){
+	                    if (datos[i] == 0x06 && datos[i+1] == 0x03 && datos[i+2] == 0x55 && datos[i+3] == 0x04 && datos[i+4] == 0x05){
+	                        posicion_dni0 = i+4;
+	                        posicion_dni0= posicion_dni0 + 3;
+	                    }
+	                }
+	        
+	                //Nos posicionamos en el byte donde empieza el NIF y leemos sus 9 bytes
+	                for (int z = 0; z < 9; z++) {
+	                    r3[z] = datos[posicion_dni0 + z];
+	                }
+	                nif = new String(r3);
+	                
+	                
+	                //Ahora lo volvemos a hacer para el nombre
+	                for (int i=posicion_dni0+9; i<datos.length; i++){
+	                    if (datos[i] == 0x06 && datos[i+1] == 0x03 && datos[i+2] == 0x55 && datos[i+3] == 0x04 && datos[i+4] == 0x2A){
+	                        posicion_nombre0 = i+4;
+	                        posicion_nombre0= posicion_nombre0 + 3;
+	                    }
+	                }
+	                for (int z = 0; z<6; z++) {
+	                	r2[z] = datos[posicion_nombre0 + z];
+	                	
+	                }
+	                
+	             
+	                nombre = new String(r2);
+	                PrimeraLetraNombre = nombre.charAt(0);
+
+	                for (int i=posicion_nombre0; i<datos.length; i++){
+	                    if (datos[i] == 0x06 && datos[i+1] == 0x03 && datos[i+2] == 0x55 && datos[i+3] == 0x04 && datos[i+4] == 0x03){
+	                        posicion_apellido0= i+ 5;
+	                        posicion_apellido0= posicion_apellido0 + 2;
+	                        break;
+	                    }
+	                }
+	                
+	                
+	                
+	                //Nos posicionamos en el byte donde empiezan los apellido1 y leemos sus 5 bytes.
+	                int v = 0;
+	                while(true)
+	                {
+	                    if(datos[posicion_apellido0+v] == 0x2C){
+	                        break;
+	                    }
+	                    r4[v] = datos[posicion_apellido0+v];
+	                    v++;
+	                }
+	                String apellidos= new String(r4);
+	                apellido1 = apellidos.split(" ")[0];
+	                apellido2 = apellidos.split(" ")[1]; 
+	                PrimeraLetra2Apellido = apellido2.charAt(0);
+	                
+	               
+	            }
+	            Usuario completName = new Usuario(nombre,apellido1,apellido2,nif,PrimeraLetraNombre,PrimeraLetra2Apellido, nombreUsuario);
+	       return completName;
+	    }
 }

@@ -5,6 +5,17 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 
 
 /**
@@ -24,10 +35,42 @@ public class Main {
         //         correctamente los datos de usuario 
         ObtenerDatos od = new ObtenerDatos();
         Usuario user = od.LeerNIF();
-        if(user!=null)
-            System.out.println("usuario: "+user.toString());
+        if(user!=null) {
+        	String usuario = user.getPrimeraLetraNombre()+user.getApellido1()+user.getPrimeraLetra2Apellido();
+        	 String clave = user.getNif();
+      
+           // System.out.println("usuario: "+user.toString());
+        //System.out.println("usuariodni: " +user.usuario_dni);
         
         //TAREA 3. AUTENTICAR EL CLIENTE CON EL SERVIDOR
-        
+
+        URL url = new URL("http://localhost:8080/dni/Login");
+       Map<String, Object> params = new LinkedHashMap<>();
+    
+       params.put("usuario", usuario);
+       params.put("clave", clave);
+       
+       StringBuilder post = new StringBuilder();
+       for( Map.Entry<String, Object> param : params.entrySet()) {
+    	   if(post.length() !=0 )
+    		   post.append('&');
+           post.append(URLEncoder.encode(param.getKey(), "UTF-8"));
+           post.append('=');
+           post.append(URLEncoder.encode(String.valueOf(param.getValue()),
+                   "UTF-8"));
+       }
+       byte[] postBytes = post.toString().getBytes("UTF-8");
+       HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+       conn.setRequestMethod("POST");
+       conn.setRequestProperty("Content-Type",
+               "application/x-www-form-urlencoded");
+       conn.setRequestProperty("Content-Length",
+               String.valueOf(postBytes.length));
+       conn.setDoOutput(true);
+       conn.getOutputStream().write(postBytes);
+       Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+       for (int c = in.read(); c != -1; c = in.read())
+           System.out.print((char) c);
+        }
     }
 }
